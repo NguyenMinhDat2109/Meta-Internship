@@ -33,7 +33,6 @@ export const KNOCK_BACK_TIME_DEFAULT = 0.1;
 export const ENEMY_SPEED_DEFAULT = 1.6;
 export const ENEMY_EXP_DEFAULT = 2;
 export const ENEMY_COIN_DEFAULT = 10;
-
 export enum MAP_ID
 {
     MAP_1 = "Map_1",
@@ -142,5 +141,12 @@ export const HEAL_ITEM_CHANGE_MAP: Map<EnemyType, number> = new Map<EnemyType, n
     [
         [EnemyType.NORMAL, 0.05],
         [EnemyType.BOSS, 1],
+    ]
+);
+
+export const GOLD_ITEM_QUANTITY_MAP: Map<EnemyType, number> = new Map<EnemyType, number>(
+    [
+        [EnemyType.NORMAL, 10],
+        [EnemyType.BOSS, 200],
     ]
 );

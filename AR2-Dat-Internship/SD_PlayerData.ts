@@ -14,7 +14,7 @@ export namespace PlayerData
   {
 
     console.log("Creating default player data");
-
+    
     return {
       Type: DataKey.PlayerData,
       Level: 1,

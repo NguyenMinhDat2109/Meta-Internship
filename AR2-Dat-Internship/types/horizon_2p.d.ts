@@ -1647,5 +1647,57 @@ export declare class HorizonPanel {
      */
     static hidePanel(panelToken: HorizonPanelToken): void;
 }
+/**
+ * Loading screen pause API
+ */
+export declare class LoadingScreenPause {
+    /**
+     *
+     * @remarks
+     * Retrieve the maximum amount of time loading screen will be paused when HasLoadingScreenPause SVR tag is set.
+     * Value is in milliseconds.
+     * @example
+     * start() {
+     *    var maxPauseTime = LoadingScreenPause.getLoadingScreenMaxPauseTime();
+     * }
+     */
+    static getLoadingScreenMaxPauseTime(): number;
+    /**
+     *
+     * @remarks
+     * Returns true if the loading screen is still up
+     * @example
+     * start() {
+     *    var stillOnLoadingScreen = LoadingScreenPause.isLoadingScreenStillUp();
+     * }
+     */
+    static isLoadingScreenStillUp(): boolean;
+    /**
+     * Unpause the loading screen
+     * @remarks
+     * When the HasLoadingScreenPause SVR tag is set on the world, the loading screen will wait
+     * until this function is called or until the max wait time returned by getLoadingScreenMaxPauseTime.
+     * @param player - The player to end loading screen pause for. When called locally it will always apply to the calling player
+     * @example
+     *
+     * //Server
+     * start() {
+     *   this.connectCodeBlockEvent(this.entity, hz.CodeBlockEvents.OnPlayerEnterWorld, (enteredby:hz.Player)=>{
+     *     LoadingScreenPause.endLoadingScreenPause(enteredBy);
+     *   });
+     * }
+     *
+     * //Local
+     * start() {
+     *   this.connectCodeBlockEvent(this.entity, hz.CodeBlockEvents.OnPlayerEnterWorld, (enteredby:hz.Player)=>{
+     *     this.entity.owner.set(enteredby);
+     *   });
+     * }
+     * receiveOwnership( state: null, fromPlayer: hz.Player, toPlayer: hz.Player): void {
+     *   LoadingScreenPause.endLoadingScreenPause(toPlayer);
+     * };
+     */
+    static endLoadingScreenPause(player: Player): void;
+}
 
 }

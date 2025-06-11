@@ -3492,6 +3492,78 @@ export declare class Player {
      */
     avatarScale: HorizonProperty<number>;
     /**
+    * Gets the avatar item overrides on the player.
+    * @returns - An Array of Item skus
+  
+    * @example
+    * ```
+    * playerA.getAvatarOverrides();
+    * ```
+    */
+    getAvatarOverrides(): Array<string>;
+    /**
+    * Overrides avatar items on the player. Previous overrides are overwritten.
+    * Overrides of a different style (Such as a Fantastical avatar) will replace the user's Stylized avatar fully.
+    * If there are multiple skus for the same slot (eg top), priority is given to the first one in the array.
+    * Create Avatar items in the {@link https://horizon.meta.com/creator/avatars | creator portal}
+    *
+    * @param skus - Array of Item skus to override
+    * @returns - A promise that resolves to true if items are added successfully, false otherwise
+  
+    * @example
+    * ```
+    * playerA.setAvatarOverrides([sku, anotherSku]);
+    * ```
+    */
+    setAvatarOverrides(skus: Array<string>): Promise<boolean>;
+    /**
+    * Overrides an avatar item on the player. Previous overrides are kept.
+    * Adds the new sku to the top of the existing list of overrides.
+    * Does not add if item is already in the list of overrides.
+    *
+    * @param sku - Item sku to add
+    * @returns - A promise that resolves to true if item is added successfully, false otherwise
+  
+    * @example
+    * ```
+    * playerA.addAvatarOverride(sku);
+    * ```
+    */
+    addAvatarOverride(sku: string): Promise<boolean>;
+    /**
+    * Removes an avatar item override on the player.
+    *
+    * @param sku - Item sku to remove
+    * @returns - true if item is removed successfully, false otherwise. Will also return true if item was not in the list of overrides.
+  
+    * @example
+    * ```
+    * playerA.removeAvatarOverride(sku);
+    * ```
+    */
+    removeAvatarOverride(sku: string): boolean;
+    /**
+    * Clears avatar item overrides on the player.
+  
+    * @example
+    * ```
+    * playerA.clearAvatarOverrides();
+    * ```
+    */
+    clearAvatarOverrides(): void;
+    /**
+    * Checks if an override can be applied to a player with collisions automatically remediated.
+    *
+    * @param sku - Item sku to override
+    * @returns - A promise that resolves to true if item can be overriden successfully, false otherwise
+  
+    * @example
+    * ```
+    * playerA.canApplyAvatarOverride(sku);
+    * ```
+    */
+    canApplyAvatarOverride(sku: string): Promise<boolean>;
+    /**
      * Plays an animation asset on the player's avatar one time.
      *
      * @remarks

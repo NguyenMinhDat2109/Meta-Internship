@@ -1277,6 +1277,20 @@ export declare type TextProps = {
  */
 export declare function Text(props: Readonly<TextProps>): UINode<TextProps>;
 /**
+ * Represents the different set of Avatar Expressions you can request an image of.
+ * Use with ImageSource.fromPlayerAvatarExpression
+ */
+export declare enum AvatarImageExpressions {
+    Neutral = "Neutral",
+    Happy = "Happy",
+    Sad = "Sad",
+    Angry = "Angry",
+    TeeHee = "TeeHee",
+    Congrats = "Congrats",
+    Shocked = "Shocked",
+    Waving = "Waving"
+}
+/**
  * Represents the styles of an {@link Image_2 | Image} component in a UI panel.
  *
  * @remarks
@@ -1329,6 +1343,16 @@ export declare class ImageSource {
      * @returns The image source for the given texture asset.
      */
     static fromTextureAsset(texture: TextureAsset): ImageSource;
+    /**
+     * Gets an image based on the player's avatar and expression.
+     * @remarks
+     * Only works on Client. Make sure your Custom UI panel and script is local.
+     *
+     * @param player - The player to retrieve the avatar for.
+     * @param expression - The expression to retrieve.
+     * @returns The image source for the given avatar and expression.
+     */
+    static fromPlayerAvatarExpression(player: Player, expression: AvatarImageExpressions): ImageSource;
 }
 /**
  * Represents the props of an {@link Image_2 | Image} component.

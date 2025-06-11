@@ -25,6 +25,10 @@ import {Delay} from 'Utilities';
 import {EnemyID} from 'Enemy_Const';
 import {DelayTask, IDelayTask} from 'IDelayTask_DelayTask';
 import {DelayTaskController} from 'IDelayTaskController';
+import {PlayerDataProvider} from 'SD_SessionDataProvider';
+import {GoldManager} from 'GoldManager';
+
+
 
 export class LevelObserver
 {
@@ -135,6 +139,8 @@ export class GameManager extends hz.Component<typeof GameManager>
       playerController: 1,
       shield: 1,
       enemySpawnerEffect: 10,
+      enemyGoldBoss: 1,
+      enemyGold : 1,
     };
 
     let enemyIDs = [
@@ -165,6 +171,10 @@ export class GameManager extends hz.Component<typeof GameManager>
       this.entityManager.AcquireEntity(EntityAssetIDs.PlayerControllerID, acquireAmounts.playerController),
       this.entityManager.AcquireEntity(EntityAssetIDs.ShieldID, acquireAmounts.shield), // TODO: Define the shield asset ID
       this.entityManager.AcquireEntity(EntityAssetIDs.SpawnerEffectID, acquireAmounts.enemySpawnerEffect),
+      this.entityManager.AcquireEntity(EntityAssetIDs.LootItemGoldIDBig, acquireAmounts.enemyGoldBoss),
+      this.entityManager.AcquireEntity(EntityAssetIDs.LootItemGoldIDMedium, acquireAmounts.enemyGold),
+      this.entityManager.AcquireEntity(EntityAssetIDs.LootItemGoldIDSmall, acquireAmounts.enemyGold),
+
     );
     await Promise.all(allsRequest);
   }
@@ -225,8 +235,12 @@ export class GameManager extends hz.Component<typeof GameManager>
     this.serviceLocator.RegisterService(ScheduleManager, 'ScheduleManager');
     this.serviceLocator.RegisterService(StatsManager, 'StatsManager');
     this.serviceLocator.RegisterService(DelayTaskController, 'DelayTaskController');
+    this.serviceLocator.RegisterService(PlayerDataProvider, 'PlayerDataProvider');
+
     this.entityManager = new EntityManager(this, this.serviceLocator, poolManager);
     this.playerDataManager = new SD_LocalDataManager(this, this.currentPlayer);
+      PlayerDataProvider.SetSessionDataManager(this.playerDataManager); 
+      GoldManager.Init(this.currentPlayer);
     this.textManager = new TextManager(this.entityManager);
     this.characterManager = new CharacterManager(this, this.serviceLocator);
     this.stateManager = new StateManager();

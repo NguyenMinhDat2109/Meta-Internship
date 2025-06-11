@@ -1,4 +1,4 @@
-import {BulletID, EnemyID, EnemyType, ENEMY_EXP_DEFAULT, EXPERIENCE_ITEM_QUANTITY_MAP, HEAL_ITEM_CHANGE_MAP, MAP_ID} from "Enemy_Const";
+import {BulletID, EnemyID, EnemyType, ENEMY_EXP_DEFAULT, EXPERIENCE_ITEM_QUANTITY_MAP, HEAL_ITEM_CHANGE_MAP, MAP_ID,GOLD_ITEM_QUANTITY_MAP} from "Enemy_Const";
 import {Enemy} from "Enemy";
 import {EntityManager} from "EntityManager";
 import {GameManager, LevelObserver} from "GameManager";
@@ -18,10 +18,14 @@ import {Bullet_Enemy} from "Bullet_Enemy";
 import {EntityAssetIDs} from "ConfigAssets";
 import {CharacterManager} from "CharacterManager";
 import {LootItemExperience} from "LootItemExperience";
+import {LootItemGold} from "LootItemGold";
+
 import {LootItemHealing} from "LootItemHealing";
 import {LootItemConsumable} from "LootItemConsumable";
 import {ObserverHandle} from "ObserverHandle";
 import {WaveConfig} from "Enemy_Data";
+import {GoldManager} from "GoldManager";
+import { SD_LocalDataManager } from "SD_LocalDataManager";
 
 export class WaveObserver
 {
@@ -44,7 +48,20 @@ const MAX_WAVE = 50;
 const MIN_ENTITIES_NEED = 2;
 const LOOT_ITEM_RADIUS = 1;
 const DELAY_BETWEEN_SPAWN = 0.1;
-
+const stageMultipliers: { [stage: number]: number } = {
+    1: 1,
+    2: 1.2,
+    3: 1.5,
+    4: 1.8,
+    5: 2,
+    6: 2.2,
+    7: 2.4,
+    8: 2.6,
+    9: 2.8,
+    10: 3
+  };
+  let goldValue;
+  const currentStage = 1;
 export class WaveManager extends ObserverManager<WaveObserver> implements IWaveObserver
 {
   start(): void
@@ -61,6 +78,9 @@ export class WaveManager extends ObserverManager<WaveObserver> implements IWaveO
   public currentWave: number = 0;
   public currentAliveEnemiesAmmount: number = 0;
   private currentWaveConfig: WaveConfig | undefined;
+    private GoldManager: GoldManager | undefined;
+
+  
   // public currentWaveExp: number = 0;
   private enemyDeathEvent: EventSubscription | undefined; // Improve me: need to change to wave manager
 
@@ -71,6 +91,7 @@ export class WaveManager extends ObserverManager<WaveObserver> implements IWaveO
     this.servieLocator = serviceLocator;
     this.waveConfigManager = waveConfigManager;
     this.configManager = configManager;
+    // this.GoldManager = goldManager;
   }
 
   public SetupWaveManager()
@@ -78,6 +99,8 @@ export class WaveManager extends ObserverManager<WaveObserver> implements IWaveO
     this.entityManager = this.servieLocator.Resolve<EntityManager>(EntityManager);
     this.stateManager = this.servieLocator.Resolve<StateManager>(StateManager);
     this.levelManager = this.servieLocator.Resolve<CharacterLevelManager>(CharacterLevelManager);
+    
+    // this.GoldManager = new GoldManager(this.servieLocator.Resolve<CharacterManager>(CharacterManager).Player)
   }
 
   public async SpawnEnemies(): Promise<void>
@@ -198,7 +221,7 @@ export class WaveManager extends ObserverManager<WaveObserver> implements IWaveO
   }
 
 
-  private async DropLootItem(enemy: Enemy)
+private async DropLootItem(enemy: Enemy)
   {
     let amount = EXPERIENCE_ITEM_QUANTITY_MAP.get(enemy.EnemyType) ?? 0;
     await this.CreateLootItem(enemy, EntityAssetIDs.LootItemExperienceID, amount);
@@ -207,9 +230,39 @@ export class WaveManager extends ObserverManager<WaveObserver> implements IWaveO
     if(Math.random() <= chanceToGetHealing)
     {
       await this.CreateLootItem(enemy, EntityAssetIDs.LootItemHealingID, 1);
+      
     }
+    // let amountGold = GOLD_ITEM_QUANTITY_MAP.get(enemy.EnemyType) ?? 0;
+     const isBoss = enemy.EnemyType === EnemyType.BOSS;
+    // if(isBoss)
+    // {
+    //   await this.CreateLootItem(enemy, EntityAssetIDs.LootItemGoldIDboss, 1);
+    // }
+    // else{
+    //         await this.CreateLootItem(enemy, EntityAssetIDs.LootItemGoldIDnomal, 1);
 
+    // }
+    let ENEMY_GOLD_BOSS_DEFAULT = GOLD_ITEM_QUANTITY_MAP.get(EnemyType.BOSS) ?? 0;
+    let ENEMY_GOLD_DEFAULT = GOLD_ITEM_QUANTITY_MAP.get(EnemyType.NORMAL) ?? 0;
+    const stageMultiplier = stageMultipliers[currentStage] ?? 1;
+
+goldValue = isBoss
+    ? ENEMY_GOLD_BOSS_DEFAULT * stageMultiplier
+    : ENEMY_GOLD_DEFAULT * stageMultiplier;
+
+  // Xác định loại vàng dựa trên giá trị
+  let goldAssetID ;
+  if (goldValue > 500) {
+     goldAssetID = EntityAssetIDs.LootItemGoldIDBig;
+  } else if (goldValue >= 101) {
+     goldAssetID = EntityAssetIDs.LootItemGoldIDMedium;
+  } else {
+     goldAssetID = EntityAssetIDs.LootItemGoldIDSmall;
   }
+
+  await this.CreateLootItem(enemy, goldAssetID, 1);
+}
+
 
   private async CreateLootItem(enemy: Enemy, assetID: string, amount: number)
   {
@@ -314,6 +367,7 @@ export class WaveManager extends ObserverManager<WaveObserver> implements IWaveO
     }
 
     this.CollectExperienceItems();
+    this.CollectGoldItems();
     await this.WaitProcessExperience();
     if(this.currentWave < MAX_WAVE - 1)
     {
@@ -377,6 +431,39 @@ export class WaveManager extends ObserverManager<WaveObserver> implements IWaveO
     this.levelManager?.AddExperience(ENEMY_EXP_DEFAULT * length);
   }
 
+private async CollectGoldItems(): Promise<void> {
+const lootGoldItems = this.entityManager?.FindEntities(LootItemGold);
+
+  if (!lootGoldItems || lootGoldItems.length == 0  ) {
+
+    return;
+  }
+
+  const GoldBig = lootGoldItems.filter(item => item.AssetID == EntityAssetIDs.LootItemGoldIDBig);
+  const GoldMedium = lootGoldItems.filter(item => item.AssetID == EntityAssetIDs.LootItemGoldIDMedium);
+  const GoldSmall = lootGoldItems.filter(item => item.AssetID == EntityAssetIDs.LootItemGoldIDSmall);
+  const GoldBigCount = GoldBig.length;
+  const GoldMediumCount = GoldMedium.length;
+  const GoldSmallCount = GoldSmall.length;
+ 
+  const stageMultiplier = stageMultipliers[currentStage] ?? 1;
+ let ENEMY_GOLD_BOSS_DEFAULT = GOLD_ITEM_QUANTITY_MAP.get(EnemyType.BOSS) ?? 0;
+    let ENEMY_GOLD_DEFAULT = GOLD_ITEM_QUANTITY_MAP.get(EnemyType.NORMAL) ?? 0;
+
+const totalGold = (GoldBigCount * ENEMY_GOLD_BOSS_DEFAULT * stageMultiplier) +
+                    (GoldMediumCount * ENEMY_GOLD_BOSS_DEFAULT * stageMultiplier) +  (GoldSmallCount * ENEMY_GOLD_DEFAULT * stageMultiplier) ;  
+
+const player = this.servieLocator.Resolve<CharacterManager>(CharacterManager).Player;
+
+  GoldManager.Init(player);       
+  GoldManager.AddGold(totalGold);
+
+  const character = this.servieLocator.Resolve<CharacterManager>(CharacterManager).Player;
+
+  const flyPromises = lootGoldItems.map(item => item.ConnectFlyToTargetToProcessUpdate(character));
+
+  await Promise.all(flyPromises);
+}
 
   public Reset()
   {
@@ -384,5 +471,7 @@ export class WaveManager extends ObserverManager<WaveObserver> implements IWaveO
     this.enemyDeathEvent = undefined;
     this.currentWave = 0;
     this.currentAliveEnemiesAmmount = 0;
+
+    
   }
 }

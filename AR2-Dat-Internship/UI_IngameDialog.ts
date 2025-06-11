@@ -5,6 +5,7 @@ import {ObserverHandle} from 'ObserverHandle';
 import {UIButtonPressEvent} from 'UI_ObtainedSkillsDialog';
 import {UIPauseButtonPressEvent} from 'UI_PauseDialog';
 import {UI_Style} from 'UI_Style';
+import {GoldManager} from 'GoldManager';
 
 const EXPERIENCE_BAR_EASING_TIME = 300; // ms
 
@@ -16,7 +17,7 @@ export const Set_Boss_Name_Event = new hz.LocalEvent<{name: string;}>("Set_Boss_
 export class UI_IngameDialog extends Dialog
 {
   static propsDefinition = {};
-
+private static instance: UI_IngameDialog;
   private handle: ObserverHandle = new ObserverHandle();
 
   private experiencePercentBind = new AnimatedBinding(0);
@@ -33,13 +34,17 @@ export class UI_IngameDialog extends Dialog
   public isPauseButtonClicked = false;
   start()
   {
+        UI_IngameDialog.instance = this;
+    const gold = GoldManager.GetGold();
     this.SetLevel(1);
     // this.SetWave(1);
-    this.SetCoin(9999);
+    this.SetCoin(gold);
     this.ConnectBossHPBarEvents();
 
   }
-
+ public static getInstance(): UI_IngameDialog {
+    return UI_IngameDialog.instance;
+  }
   public ToggleBossUI(isBossWave: boolean)
   {
     this.isBossWave.set(isBossWave);
@@ -383,6 +388,8 @@ export class UI_IngameDialog extends Dialog
 
   public SetCoin(coin: number)
   {
+    console.log("Get coin"+coin);
+    
     this.coinTextBind.set(`${coin}`);
   }
 
