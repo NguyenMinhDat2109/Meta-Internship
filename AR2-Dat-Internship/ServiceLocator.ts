@@ -94,7 +94,7 @@ export class ServiceLocator implements IServiceLocator
   }
 
   public Resolve<T>(type: Function): T
-  {
+  {    
     const name = this.serviceMappings.get(type);
     if(!name)
     {

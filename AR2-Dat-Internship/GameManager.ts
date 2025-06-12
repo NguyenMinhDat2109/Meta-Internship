@@ -1,37 +1,36 @@
 import * as hz from 'horizon/core';
-import {EntityManager} from 'EntityManager';
-import {Local_PoolManager} from 'Local_PoolManager';
-import {IServiceLocator, ServiceLocator} from 'ServiceLocator';
-import {SD_LocalDataManager} from 'SD_LocalDataManager';
-import {ConfigManager} from 'ConfigManager';
-import {WaveConfigManager} from 'WaveConfigManager';
-import {ITextManager, TextManager} from 'TextManager';
-import {CharacterManager} from 'CharacterManager';
-import {IStateManager, StateManager} from 'IStateManager';
-import {ObserverHandle} from 'ObserverHandle';
-import {IObserverManager, ObserverManager} from 'IObserverManager';
-import {Camera_Activity} from 'Camera_Activity';
-import {WaveManager} from 'WaveManager';
-import {CharacterLevelManager} from 'CharacterLevelManager';
-import {BulletAcquireManager} from 'BulletAcquireManager';
-import {EntityAssetIDs} from 'ConfigAssets';
-import {SkillSelectionManager} from 'SkillSelectionManager';
-import {EffectManager, IEffectManager} from 'IEffectManager';
-import {IScheduleManager, ScheduleActivity, ScheduleManager} from 'IScheduleManager';
-import {EffectItemConfig} from 'IEffectItemConfig';
-import {SkillBulletStatsID, SkillCharacterStatsID, SkillRecoveryID} from 'Config_Skills';
-import {IStatsManager, StatsManager} from 'IStatsManager';
-import {Delay} from 'Utilities';
-import {EnemyID} from 'Enemy_Const';
-import {DelayTask, IDelayTask} from 'IDelayTask_DelayTask';
-import {DelayTaskController} from 'IDelayTaskController';
-import {PlayerDataProvider} from 'SD_SessionDataProvider';
-import {GoldManager} from 'GoldManager';
+import { EntityManager } from 'EntityManager';
+import { Local_PoolManager } from 'Local_PoolManager';
+import { IServiceLocator, ServiceLocator } from 'ServiceLocator';
+import { SD_LocalDataManager } from 'SD_LocalDataManager';
+import { ConfigManager } from 'ConfigManager';
+import { WaveConfigManager } from 'WaveConfigManager';
+import { ITextManager, TextManager } from 'TextManager';
+import { CharacterManager } from 'CharacterManager';
+import { IStateManager, StateManager } from 'IStateManager';
+import { ObserverHandle } from 'ObserverHandle';
+import { IObserverManager, ObserverManager } from 'IObserverManager';
+import { Camera_Activity } from 'Camera_Activity';
+import { WaveManager } from 'WaveManager';
+import { CharacterLevelManager } from 'CharacterLevelManager';
+import { BulletAcquireManager } from 'BulletAcquireManager';
+import { EntityAssetIDs } from 'ConfigAssets';
+import { SkillSelectionManager } from 'SkillSelectionManager';
+import { EffectManager, IEffectManager } from 'IEffectManager';
+import { IScheduleManager, ScheduleActivity, ScheduleManager } from 'IScheduleManager';
+import { EffectItemConfig } from 'IEffectItemConfig';
+import { SkillBulletStatsID, SkillCharacterStatsID, SkillRecoveryID } from 'Config_Skills';
+import { IStatsManager, StatsManager } from 'IStatsManager';
+import { Delay } from 'Utilities';
+import { EnemyID } from 'Enemy_Const';
+import { DelayTask, IDelayTask } from 'IDelayTask_DelayTask';
+import { DelayTaskController } from 'IDelayTaskController';
+import { PlayerDataProvider } from 'SD_SessionDataProvider';
+import { GoldManager } from 'GoldManager';
 
 
 
-export class LevelObserver
-{
+export class LevelObserver {
   /**
    * Called when the character takes damage.
    */
@@ -52,12 +51,14 @@ export class LevelObserver
   public OnCollectExp?: (expPercent: number) => void;
 
   public OnCharacterLevelUp?: (level: number, expPercent: number) => void;
+
+  public OnCollectGold?: (gold: number) => void;
+
 }
 
-export class GameManager extends hz.Component<typeof GameManager>
-{
+export class GameManager extends hz.Component<typeof GameManager> {
   static propsDefinition = {
-    playerSpawnPoint: {type: hz.PropTypes.Entity},
+    playerSpawnPoint: { type: hz.PropTypes.Entity },
   };
 
   private updateEvent: hz.EventSubscription | undefined;
@@ -77,17 +78,16 @@ export class GameManager extends hz.Component<typeof GameManager>
   private waveConfigManager!: WaveConfigManager;
   private _isPaused: boolean = false;
   private isPlaying: boolean = true;
+public get GetServiceLocator(){
+  return this.serviceLocator;
+}
 
-
-  public get isPaused()
-  {
+  public get isPaused() {
     return this._isPaused;
   }
 
-  public set isPaused(value: boolean)
-  {
-    if(this._isPaused === value)
-    {
+  public set isPaused(value: boolean) {
+    if (this._isPaused === value) {
       return;
     }
     this.stateManager?.DispatchEvent((observer) => observer.OnPaused?.(value));
@@ -102,28 +102,23 @@ export class GameManager extends hz.Component<typeof GameManager>
   public ObserverManager: IObserverManager<LevelObserver> = new ObserverManager<LevelObserver>();
 
 
-  preStart()
-  {
+  preStart() {
     this.currentPlayer = this.entity.owner.get();
   }
 
-  start()
-  {
-    if(this.currentPlayer == this.world.getServerPlayer()) return;
+  start() {
+    if (this.currentPlayer == this.world.getServerPlayer()) return;
 
   }
 
-  public async ScheduleDelay(delay: number)
-  {
+  public async ScheduleDelay(delay: number) {
     const task = new DelayTask(delay);
     this.delayTaskController?.AddTask(task);
     return task.promise;
   }
 
-  private async AcquireEntity()
-  {
-    if(!this.entityManager || !this.characterManager)
-    {
+  private async AcquireEntity() {
+    if (!this.entityManager || !this.characterManager) {
       return;
     }
     let allsRequest: Array<Promise<void>> = [];
@@ -140,7 +135,7 @@ export class GameManager extends hz.Component<typeof GameManager>
       shield: 1,
       enemySpawnerEffect: 10,
       enemyGoldBoss: 1,
-      enemyGold : 1,
+      enemyGold: 10,
     };
 
     let enemyIDs = [
@@ -150,12 +145,10 @@ export class GameManager extends hz.Component<typeof GameManager>
       EnemyID.ANDROID,
     ];
 
-    for(let i = 0; i < enemyIDs.length; i++)
-    {
+    for (let i = 0; i < enemyIDs.length; i++) {
       const element = enemyIDs[i];
       let enemyConfig = this.configManager?.GetEnemyConfig(element);
-      if(enemyConfig)
-      {
+      if (enemyConfig) {
         let acquireEnemy = this.entityManager.AcquireEntity(enemyConfig.AssetID, acquireAmounts.enemyRequire);
         allsRequest.push(acquireEnemy);
       }
@@ -179,11 +172,9 @@ export class GameManager extends hz.Component<typeof GameManager>
     await Promise.all(allsRequest);
   }
 
-  public LoadLevel()
-  {
+  public LoadLevel() {
     // this.playerController?.OnStart();
-    if(this.stateManager)
-    {
+    if (this.stateManager) {
       this.stateManager.IsPlaying = true;
       this.stateManager.IsTriggered = false;
 
@@ -196,15 +187,12 @@ export class GameManager extends hz.Component<typeof GameManager>
     this.waveManager.FirstWaveHandle();
   }
 
-  public Revive()
-  {
+  public Revive() {
     this.stateManager?.Revive();
   }
 
-  public async Initialize()
-  {
-    if(this.currentPlayer == undefined)
-    {
+  public async Initialize() {
+    if (this.currentPlayer == undefined) {
       console.error(`Player undefine`);
       return;
     }
@@ -239,8 +227,7 @@ export class GameManager extends hz.Component<typeof GameManager>
 
     this.entityManager = new EntityManager(this, this.serviceLocator, poolManager);
     this.playerDataManager = new SD_LocalDataManager(this, this.currentPlayer);
-      PlayerDataProvider.SetSessionDataManager(this.playerDataManager); 
-      GoldManager.Init(this.currentPlayer);
+    PlayerDataProvider.SetSessionDataManager(this.playerDataManager);
     this.textManager = new TextManager(this.entityManager);
     this.characterManager = new CharacterManager(this, this.serviceLocator);
     this.stateManager = new StateManager();
@@ -289,54 +276,49 @@ export class GameManager extends hz.Component<typeof GameManager>
 
 
     this.handle.AddObserver(this.stateManager, {
-      OnRevived: () =>
-      {
+      OnRevived: () => {
         this.isPlaying = true;
         this.stateManager?.Trigger();
       },
-      OnFailed: () =>
-      {
+      OnFailed: () => {
         //To do: show result
         this.isPlaying = false;
         this.ObserverManager.DispatchEvent(observer => observer.OnLevelFailed?.());
       },
-      OnCompleted: () =>
-      {
+      OnCompleted: () => {
         this.isPlaying = false;
         this.ObserverManager.DispatchEvent(observer => observer.OnLevelCompleted?.());
       }
     });
 
     this.handle.AddObserver(this.levelManager, {
-      OnCollectExp: (expPercent: number) =>
-      {
+      OnCollectExp: (expPercent: number) => {
         this.ObserverManager.DispatchEvent((observer) => observer.OnCollectExp?.(expPercent));
       },
-      OnCharacterLevelUp: (level: number, expPercent: number) =>
-      {
+      OnCharacterLevelUp: (level: number, expPercent: number) => {
         this.ObserverManager.DispatchEvent((observer) => observer.OnCharacterLevelUp?.(level, expPercent));
-      }
+      },
+     
     });
 
     this.handle.AddObserver(this.waveManager, {
-      OnInitialWaveSuccess: (wave) =>
-      {
+      OnInitialWaveSuccess: (wave) => {
         this.stateManager?.Trigger();
         this.ObserverManager.DispatchEvent((observer) => observer.OnWaveChanged?.(wave));
       },
-      OnCompletedWave: () =>
-      {
-        if(this.stateManager)
-        {
+      OnCompletedWave: () => {
+        if (this.stateManager) {
           this.stateManager.IsTriggered = false;
         }
+      },
+       OnCollectGold: (gold: number) => {
+        this.ObserverManager.DispatchEvent((observer) => observer.OnCollectGold?.(gold));
       }
     });
 
 
     //Camera activity
-    this.connectLocalBroadcastEvent(hz.World.onUpdate, (time) =>
-    {
+    this.connectLocalBroadcastEvent(hz.World.onUpdate, (time) => {
       this.cameraActivity?.Process(time.deltaTime);
       this.scheduleManager?.ProcessUpdate(time.deltaTime);
     });
@@ -345,26 +327,21 @@ export class GameManager extends hz.Component<typeof GameManager>
     await this.AcquireEntity();
   }
 
-  private ConnectUpdate()
-  {
-    this.updateEvent = this.connectLocalBroadcastEvent(hz.World.onUpdate, (time) =>
-    {
+  private ConnectUpdate() {
+    this.updateEvent = this.connectLocalBroadcastEvent(hz.World.onUpdate, (time) => {
       this.Process(time.deltaTime);
     });
   }
 
-  private Process(deltaTime: number)
-  {
-    if(!this.isPlaying || this.isPaused)
-    {
+  private Process(deltaTime: number) {
+    if (!this.isPlaying || this.isPaused) {
       return;
     }
     this.entityManager?.ProcessUpdate(deltaTime);
     this.delayTaskController?.Process(deltaTime);
   }
 
-  public async OnReset()
-  {
+  public async OnReset() {
     this.effectManager?.StopAll();
     this.updateEvent?.disconnect();
     this.updateEvent = undefined;

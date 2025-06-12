@@ -978,6 +978,48 @@ export declare class Player2p extends Player {
      */
     backpedalMultiplier: HorizonProperty<number>;
     /**
+     * The multiplier applied to a mobile (2D) player's on-screen joystick input.
+     *
+     * @remarks
+     *
+     * Default value is 1.
+     * Acceptable values must be between 0 and 10, with 0 disabling the player's ability to move
+     * and 10 bringing them to full speed at 1/10th the default joystick distance.
+     * `joystickInputMultiplier.set` can be called on any player from any context, but
+     * `joystickInputMultiplier.get` will throw an error unless it's called from a
+     * local script attached to an object owned by the player in question.
+     *
+     * @example
+     * This example demonstrates how to modify the player's joystick input multiplier while they are inside a trigger.
+     * ```
+     * import {Player2p} from 'horizon/2p';
+     *
+     * class JoystickInputMultiplierExample extends hz.Component<typeof JoystickInputMultiplierExample> {
+     *   static propsDefinition = {
+     *     modifiedJoystickInputMultiplier: { type: hz.PropTypes.Number },
+     *   };
+     *
+     *   private defaultJoystickInputMultiplier: number = 1;
+     *
+     *   start() {
+     *     this.connectCodeBlockEvent(this.entity, hz.CodeBlockEvents.OnPlayerEnterTrigger, (player) => {
+     *       var extendedPlayer = new Player2p(player.id);
+     *       extendedPlayer.joystickInputMultiplier.set(this.props.modifiedJoystickInputMultiplier);
+     *     });
+     *
+     *     this.connectCodeBlockEvent(this.entity, hz.CodeBlockEvents.OnPlayerExitTrigger, (player) => {
+     *       // Return to default value.
+     *       var extendedPlayer = new Player2p(player.id);
+     *       extendedPlayer.joystickInputMultiplier.set(this.defaultJoystickInputMultiplier);
+     *     });
+     *   }
+     * }
+     *
+     * hz.Component.register(JoystickInputMultiplierExample);
+     * ```
+     */
+    joystickInputMultiplier: HorizonProperty<number>;
+    /**
      * Starts recording the player's point of view into a video.
      * @param momentName - The name of the video. This value must be alphanumeric
      * but can include spaces.

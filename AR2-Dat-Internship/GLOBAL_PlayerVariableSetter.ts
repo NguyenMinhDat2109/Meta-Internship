@@ -31,9 +31,7 @@ class GLOBAL_PlayerVariableSetter extends hz.Component<typeof GLOBAL_PlayerVaria
     });
 
     this.connectNetworkBroadcastEvent(NetWork_Data_Event.RequestData, (value) =>
-    { 
-      console.log("Request data");
-      
+    {      
       let tempData = undefined;
       switch(value.key)
       {
@@ -55,9 +53,7 @@ class GLOBAL_PlayerVariableSetter extends hz.Component<typeof GLOBAL_PlayerVaria
   private ValidatePlayerData(player: hz.Player): PlayerData
   {
     let playerData = this.persistentStorage.GetPlayerVariable<PlayerData>(player, GameDataKey(PLAYER_DATA));
-    playerData = PlayerData.Validate(playerData);
-    console.log("=== Data");
-    
+    playerData = PlayerData.Validate(playerData);    
     return playerData;
   }
 

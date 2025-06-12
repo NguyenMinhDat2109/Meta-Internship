@@ -26,7 +26,6 @@ import {BulletStats, StatsBulletManager} from 'IStatsBulletManager';
 import {HealObserverController, IHealReceiver, IHealReceiverObservable} from 'IHealReceiver';
 import {HEAL_CONFIG} from 'Skill_Const';
 import {SkillCharacterStatsID, SkillRecoveryID} from 'Config_Skills';
-import { SD_LocalDataManager } from 'SD_LocalDataManager';
 
 //FOR TEST
 const JOYSTICK_DEATHZONE = 0.03;

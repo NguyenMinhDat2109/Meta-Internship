@@ -7,7 +7,7 @@ import {DialogExtensions, DialogResult, IDialog} from 'IDialog';
 import {IDialogManager} from 'IDialogManager';
 import {Instantiate} from 'Local_Instantiate';
 import {ObserverHandle} from 'ObserverHandle';
-import {ServiceLocator} from 'ServiceLocator';
+import { IServiceLocator, ServiceLocator } from "ServiceLocator";
 import {UI_IngameDialog} from 'UI_IngameDialog';
 import {UI_LevelFailedDialog} from 'UI_LevelFailedDialog';
 import {UI_Menu} from 'UI_Menu';
@@ -19,6 +19,8 @@ import {UI_StatsCharacter} from 'UI_StatsCharacter';
 import {UI_PauseDialog, UIPauseButtonPressEvent} from 'UI_PauseDialog';
 import {Stats} from 'IStatsManager';
 import {EnemyManager} from './EnemyManager';
+import { GoldManager } from 'GoldManager';
+import { CharacterManager } from "CharacterManager";
 
 const DIALOG_ASSETS_ID = [
   '2510812645924595', // Ingame dialog
@@ -108,6 +110,11 @@ class GameManagerView extends hz.Component<typeof GameManagerView>
         this.ingameUI?.SetExperienceWhenLevelUp(expPercent);
         this.OpenSkillSelectionUI();
       },
+       OnCollectGold: (gold) => 
+      {
+        console.log('OnWaveCompleted');
+        this.ingameUI?.SetCoin(gold);
+      }
 
     });
 
@@ -189,12 +196,12 @@ class GameManagerView extends hz.Component<typeof GameManagerView>
   }
 
   private async OpenMenuUI()
-  {
-    console.log('OpenMenuUI');
+  { 
     let menuDialog = this.dialogManager.CreateDialog<UI_Menu>(UI_Menu);
     menuDialog.Show();
     let result = await DialogExtensions.GetResult(menuDialog);
     this.dialogManager.HideDialog(menuDialog);
+    
     switch(result)
     {
       case DialogResult.Play:
@@ -203,6 +210,11 @@ class GameManagerView extends hz.Component<typeof GameManagerView>
         this.gameManager.levelManager?.ResetText();
         this.gameManager.skillSelectionManager?.ResetSkillSelection();
         this.ingameUI?.ResetLevel();
+        console.log('OpenMenuUI');
+        if (this.currentPlayer) {
+
+          this.ingameUI?.SetCoin(GoldManager.GetGold(this.currentPlayer));
+        }
         this.EnableSkillButtonPressEvent(true);
         this.EnablePauseButtonPressEvent(true);
         this.gameManager.LoadLevel();

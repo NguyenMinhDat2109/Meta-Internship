@@ -1,23 +1,22 @@
-import {Dialog} from 'Dialog';
+import { Dialog } from 'Dialog';
 import * as hz from 'horizon/core';
-import {AnimatedBinding, Animation, Binding, Easing, Image, ImageSource, Pressable, Text, UIComponent, UINode, View} from 'horizon/ui';
-import {ObserverHandle} from 'ObserverHandle';
-import {UIButtonPressEvent} from 'UI_ObtainedSkillsDialog';
-import {UIPauseButtonPressEvent} from 'UI_PauseDialog';
-import {UI_Style} from 'UI_Style';
-import {GoldManager} from 'GoldManager';
+import { AnimatedBinding, Animation, Binding, Easing, Image, ImageSource, Pressable, Text, UIComponent, UINode, View } from 'horizon/ui';
+import { ObserverHandle } from 'ObserverHandle';
+import { UIButtonPressEvent } from 'UI_ObtainedSkillsDialog';
+import { UIPauseButtonPressEvent } from 'UI_PauseDialog';
+import { UI_Style } from 'UI_Style';
+import { GoldManager } from 'GoldManager';
 
 const EXPERIENCE_BAR_EASING_TIME = 300; // ms
 
 
 // export const Toggle_Boss_UI_Event = new hz.LocalEvent<{isBossWave: boolean;}>("Toggle_Boss_UI_Event");
-export const Set_Boss_Hp_Percent = new hz.LocalEvent<{hp: number; maxHp: number;}>("Set_Boss_Hp_Percent_Event");
-export const Set_Boss_Name_Event = new hz.LocalEvent<{name: string;}>("Set_Boss_Name_Event");
+export const Set_Boss_Hp_Percent = new hz.LocalEvent<{ hp: number; maxHp: number; }>("Set_Boss_Hp_Percent_Event");
+export const Set_Boss_Name_Event = new hz.LocalEvent<{ name: string; }>("Set_Boss_Name_Event");
 
-export class UI_IngameDialog extends Dialog
-{
+export class UI_IngameDialog extends Dialog {
   static propsDefinition = {};
-private static instance: UI_IngameDialog;
+  private static instance: UI_IngameDialog;
   private handle: ObserverHandle = new ObserverHandle();
 
   private experiencePercentBind = new AnimatedBinding(0);
@@ -32,53 +31,44 @@ private static instance: UI_IngameDialog;
 
   public isSkillButtonClicked = false;
   public isPauseButtonClicked = false;
-  start()
-  {
-        UI_IngameDialog.instance = this;
-    const gold = GoldManager.GetGold();
+  start() {
+    
     this.SetLevel(1);
-    // this.SetWave(1);
-    this.SetCoin(gold);
     this.ConnectBossHPBarEvents();
 
   }
- public static getInstance(): UI_IngameDialog {
+
+  
+  public static getInstance(): UI_IngameDialog {
     return UI_IngameDialog.instance;
   }
-  public ToggleBossUI(isBossWave: boolean)
-  {
+  public ToggleBossUI(isBossWave: boolean) {
     this.isBossWave.set(isBossWave);
   }
 
-  public SetBossHpPercent(hp: number, maxHp: number)
-  {
+  public SetBossHpPercent(hp: number, maxHp: number) {
     this.SetBossHp(100 * hp / maxHp);
   }
 
-  public SetBossName(name: string)
-  {
+  public SetBossName(name: string) {
     this.bossNameBind.set(name);
   }
 
-  private ConnectBossHPBarEvents()
-  {
+  private ConnectBossHPBarEvents() {
     // this.connectLocalBroadcastEvent<{isBossWave: boolean;}>(Toggle_Boss_UI_Event, (data) =>
     // {
     //   this.isBossWave.set(data.isBossWave);
     // });
-    this.connectLocalBroadcastEvent<{hp: number; maxHp: number;}>(Set_Boss_Hp_Percent, (data) =>
-    {
+    this.connectLocalBroadcastEvent<{ hp: number; maxHp: number; }>(Set_Boss_Hp_Percent, (data) => {
       this.SetBossHp(100 * data.hp / data.maxHp);
     });
-    this.connectLocalBroadcastEvent<{name: string;}>(Set_Boss_Name_Event, (data) =>
-    {
+    this.connectLocalBroadcastEvent<{ name: string; }>(Set_Boss_Name_Event, (data) => {
       this.bossNameBind.set(data.name);
     });
   }
 
 
-  override Content()
-  {
+  override Content() {
     return View({
       style: {
         ...UI_Style.Background,
@@ -137,8 +127,7 @@ private static instance: UI_IngameDialog;
               }
             })
           ],
-          onPress: () =>
-          {
+          onPress: () => {
             console.log("Pause button press " + this.isPauseButtonClicked);
 
             this.isPauseButtonClicked = !this.isPauseButtonClicked;
@@ -164,8 +153,7 @@ private static instance: UI_IngameDialog;
               }
             })
           ],
-          onPress: () =>
-          {
+          onPress: () => {
             this.isShowCharacterStat = !this.isShowCharacterStat;
             UIButtonPressEvent.OnCharacterStatsButtonPressed.Invoke(this.isShowCharacterStat);
           }
@@ -174,8 +162,7 @@ private static instance: UI_IngameDialog;
     });
   }
 
-  private WaveBar(waveBind: Binding<string>)
-  {
+  private WaveBar(waveBind: Binding<string>) {
     return View({
       style: {
         width: '5.5',
@@ -198,8 +185,7 @@ private static instance: UI_IngameDialog;
     });
   }
 
-  private LevelText(levelTextBind: Binding<string>)
-  {
+  private LevelText(levelTextBind: Binding<string>) {
     return Text({
       text: levelTextBind,
       style: {
@@ -218,8 +204,7 @@ private static instance: UI_IngameDialog;
     });
   }
 
-  private HeaderMiddleContainer()
-  {
+  private HeaderMiddleContainer() {
     return View({
       style: {
         width: '100',
@@ -281,8 +266,7 @@ private static instance: UI_IngameDialog;
     });
   }
 
-  private CoinBar(coinBind: Binding<string>)
-  {
+  private CoinBar(coinBind: Binding<string>) {
     return View({
       style: {
         width: '6',
@@ -328,8 +312,7 @@ private static instance: UI_IngameDialog;
     });
   }
 
-  private ExperienceBar(experiencePercentBind: AnimatedBinding): UINode
-  {
+  private ExperienceBar(experiencePercentBind: AnimatedBinding): UINode {
     return View({
       style: {
         width: '40',
@@ -360,49 +343,41 @@ private static instance: UI_IngameDialog;
     });
   }
 
-  public SetExperience(percentExperience: number)
-  {
+  public SetExperience(percentExperience: number) {
     this.experiencePercentBind.stopAnimation();
-    this.experiencePercentBind.set(Animation.timing(percentExperience, {duration: EXPERIENCE_BAR_EASING_TIME, easing: Easing.linear}));
+    this.experiencePercentBind.set(Animation.timing(percentExperience, { duration: EXPERIENCE_BAR_EASING_TIME, easing: Easing.linear }));
   }
 
-  public SetExperienceWhenLevelUp(percentExperience: number)
-  {
+  public SetExperienceWhenLevelUp(percentExperience: number) {
     // the whole experience bar will increase to 100 then reset to 0 and animate to the new value.
-    this.experiencePercentBind.set(Animation.timing(100, {duration: EXPERIENCE_BAR_EASING_TIME, easing: Easing.linear}), () =>
-    {
+    this.experiencePercentBind.set(Animation.timing(100, { duration: EXPERIENCE_BAR_EASING_TIME, easing: Easing.linear }), () => {
       this.experiencePercentBind.set(0);
-      this.experiencePercentBind.set((Animation.timing(percentExperience, {duration: EXPERIENCE_BAR_EASING_TIME, easing: Easing.linear})));
+      this.experiencePercentBind.set((Animation.timing(percentExperience, { duration: EXPERIENCE_BAR_EASING_TIME, easing: Easing.linear })));
     });
   }
 
-  public SetLevel(level: number)
-  {
+  public SetLevel(level: number) {
     this.levelTextBind.set(`Level ${level}`);
   }
 
-  public SetWave(wave: number)
-  {
+  public SetWave(wave: number) {
     this.waveTextBind.set(`${wave + 1}`);
   }
 
-  public SetCoin(coin: number)
-  {
-    console.log("Get coin"+coin);
-    
+  public SetCoin(coin: number) {
+    console.log("Get coin" + coin);
+
     this.coinTextBind.set(`${coin}`);
   }
 
-  public ResetLevel() 
-  {
+  public ResetLevel() {
     this.SetWave(0);
     this.SetLevel(0);
     this.experiencePercentBind.set(0);
   }
 
 
-  private BossHpBar(experiencePercentBind: AnimatedBinding): UINode
-  {
+  private BossHpBar(experiencePercentBind: AnimatedBinding): UINode {
     return View({
       style: {
         width: '40',
@@ -433,10 +408,9 @@ private static instance: UI_IngameDialog;
     });
   }
 
-  public SetBossHp(percentBossHp: number)
-  {
+  public SetBossHp(percentBossHp: number) {
     this.bossHpPercentBind.stopAnimation();
-    this.bossHpPercentBind.set(Animation.timing(percentBossHp, {duration: EXPERIENCE_BAR_EASING_TIME, easing: Easing.linear}));
+    this.bossHpPercentBind.set(Animation.timing(percentBossHp, { duration: EXPERIENCE_BAR_EASING_TIME, easing: Easing.linear }));
   }
 }
 

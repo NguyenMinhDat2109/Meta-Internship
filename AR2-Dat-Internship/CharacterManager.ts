@@ -36,7 +36,7 @@ export class CharacterManager implements ICharacterManager
     return this.character;
   }
   public get Player()
-  {
+  {    
     return this.character.GetPlayer();
   }
   public get DamageReceive()

@@ -21,11 +21,8 @@ export class SD_LocalDataManager
 
   InitLocalData(player: hz.Player)
   {
-    console.log("Init data");
-    
     this.comp.sendNetworkBroadcastEvent(NetWork_Data_Event.RequestData, {player: player, key: DataKey.PlayerData});
     this.comp.sendNetworkBroadcastEvent(NetWork_Data_Event.RequestData, {player: player, key: DataKey.Inventory});
-
     
     this.comp.connectNetworkBroadcastEvent(NetWork_Data_Event.ReceiveLocalData, (value) =>
     {
@@ -35,13 +32,8 @@ export class SD_LocalDataManager
 
   public GetData<TData extends DataType>(player: hz.Player, key: DataKey): TData
   {
-        console.log("nho");
     let playerMap = this.SessionData.get(player.id);
-    this.SessionData.forEach(element => {
-    console.log("player map",element );
-      
-    });
-    // console.log("player map",playerMap );
+ 
     if(playerMap == undefined)
     {
       throw new Error(`No session data found for player ${player.id}`);

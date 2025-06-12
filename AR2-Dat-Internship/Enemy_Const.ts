@@ -150,3 +150,15 @@ export const GOLD_ITEM_QUANTITY_MAP: Map<EnemyType, number> = new Map<EnemyType,
         [EnemyType.BOSS, 200],
     ]
 );
+export const stageMultipliers: { [stage: number]: number } = {
+  1: 1,
+  2: 1.2,
+  3: 1.5,
+  4: 1.8,
+  5: 2,
+  6: 2.2,
+  7: 2.4,
+  8: 2.6,
+  9: 2.8,
+  10: 3
+};
