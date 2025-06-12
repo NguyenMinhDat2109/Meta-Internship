@@ -184,32 +184,36 @@ export class WaveManager extends ObserverManager<WaveObserver> implements IWaveO
   }
 
 
-  private async DropLootItem(enemy: Enemy) {
-    let amount = EXPERIENCE_ITEM_QUANTITY_MAP.get(enemy.EnemyType) ?? 0;
-    await this.CreateLootItem(enemy, EntityAssetIDs.LootItemExperienceID, amount);
+ private async DropLootItem(enemy: Enemy) {
+    const allsRequest: Array<Promise<void>> = [];
 
-    let chanceToGetHealing = HEAL_ITEM_CHANGE_MAP.get(enemy.EnemyType) ?? 0;
+    const experienceAmount = EXPERIENCE_ITEM_QUANTITY_MAP.get(enemy.EnemyType) ?? 0;
+    allsRequest.push(this.CreateLootItem(enemy, EntityAssetIDs.LootItemExperienceID, experienceAmount));
+
+    const chanceToGetHealing = HEAL_ITEM_CHANGE_MAP.get(enemy.EnemyType) ?? 0;
     if (Math.random() <= chanceToGetHealing) {
-      await this.CreateLootItem(enemy, EntityAssetIDs.LootItemHealingID, 1);
-
+        allsRequest.push(this.CreateLootItem(enemy, EntityAssetIDs.LootItemHealingID, 1));
     }
-   
+
     const isBoss = enemy.EnemyType === EnemyType.BOSS;
-    let ENEMY_GOLD_BOSS_DEFAULT = GOLD_ITEM_QUANTITY_MAP.get(EnemyType.BOSS) ?? 0;
-    let ENEMY_GOLD_DEFAULT = GOLD_ITEM_QUANTITY_MAP.get(EnemyType.NORMAL) ?? 0;
-    goldValue = (isBoss? ENEMY_GOLD_BOSS_DEFAULT: ENEMY_GOLD_DEFAULT) * stageMultiplier;
+    const goldBoss = GOLD_ITEM_QUANTITY_MAP.get(EnemyType.BOSS) ?? 0;
+    const goldNormal = GOLD_ITEM_QUANTITY_MAP.get(EnemyType.NORMAL) ?? 0;
+    const goldValue = (isBoss ? goldBoss : goldNormal) * stageMultiplier;
 
     let goldAssetID;
     if (goldValue > 500) {
-      goldAssetID = EntityAssetIDs.LootItemGoldIDBig;
+        goldAssetID = EntityAssetIDs.LootItemGoldIDBig;
     } else if (goldValue > 100) {
-      goldAssetID = EntityAssetIDs.LootItemGoldIDMedium;
+        goldAssetID = EntityAssetIDs.LootItemGoldIDMedium;
     } else {
-      goldAssetID = EntityAssetIDs.LootItemGoldIDSmall;
+        goldAssetID = EntityAssetIDs.LootItemGoldIDSmall;
     }
 
-    await this.CreateLootItem(enemy, goldAssetID, 1);
-  }
+    allsRequest.push(this.CreateLootItem(enemy, goldAssetID, 1));
+
+    await Promise.all(allsRequest);
+}
+
 
 
   private async CreateLootItem(enemy: Enemy, assetID: string, amount: number) {

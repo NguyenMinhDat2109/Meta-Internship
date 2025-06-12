@@ -20,7 +20,6 @@ import {UI_PauseDialog, UIPauseButtonPressEvent} from 'UI_PauseDialog';
 import {Stats} from 'IStatsManager';
 import {EnemyManager} from './EnemyManager';
 import { GoldManager } from 'GoldManager';
-import { CharacterManager } from "CharacterManager";
 
 const DIALOG_ASSETS_ID = [
   '2510812645924595', // Ingame dialog

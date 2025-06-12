@@ -27,9 +27,9 @@ export class EntityAssetIDs
   public static PlayerControllerID = '1330399341506554';
   public static ShieldID = '1004089088318708';
   public static SpawnerEffectID = '964715399203385';
-  public static LootItemGoldIDBig = '1251160893209112';
-  public static LootItemGoldIDMedium = '725839576788195';
-  public static LootItemGoldIDSmall = '1705488746770334';
+  public static LootItemGoldIDBig = '1439412117232917';
+  public static LootItemGoldIDMedium = '501492816323593';
+  public static LootItemGoldIDSmall = '1710994233122156';
 
  
 }

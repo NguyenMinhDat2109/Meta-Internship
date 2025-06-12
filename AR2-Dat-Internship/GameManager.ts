@@ -134,8 +134,8 @@ public get GetServiceLocator(){
       playerController: 1,
       shield: 1,
       enemySpawnerEffect: 10,
-      enemyGoldBoss: 1,
-      enemyGold: 10,
+      enemyGoldBoss: 3,
+      enemyGold: 3,
     };
 
     let enemyIDs = [
@@ -164,12 +164,22 @@ public get GetServiceLocator(){
       this.entityManager.AcquireEntity(EntityAssetIDs.PlayerControllerID, acquireAmounts.playerController),
       this.entityManager.AcquireEntity(EntityAssetIDs.ShieldID, acquireAmounts.shield), // TODO: Define the shield asset ID
       this.entityManager.AcquireEntity(EntityAssetIDs.SpawnerEffectID, acquireAmounts.enemySpawnerEffect),
+
+    );
+
+    await Promise.all(allsRequest);
+    // Meta does not support creating multiple objects so split the list to avoid errors
+    allsRequest = []
+    allsRequest.push(
+      
       this.entityManager.AcquireEntity(EntityAssetIDs.LootItemGoldIDBig, acquireAmounts.enemyGoldBoss),
-      this.entityManager.AcquireEntity(EntityAssetIDs.LootItemGoldIDMedium, acquireAmounts.enemyGold),
+      this.entityManager.AcquireEntity(EntityAssetIDs.LootItemGoldIDMedium, acquireAmounts.enemyGoldBoss),
       this.entityManager.AcquireEntity(EntityAssetIDs.LootItemGoldIDSmall, acquireAmounts.enemyGold),
 
     );
     await Promise.all(allsRequest);
+
+
   }
 
   public LoadLevel() {
